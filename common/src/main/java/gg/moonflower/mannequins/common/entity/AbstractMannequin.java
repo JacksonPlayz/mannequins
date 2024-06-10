@@ -20,11 +20,13 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.*;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.AbstractMinecart;
@@ -66,7 +68,7 @@ public abstract class AbstractMannequin extends LivingEntity {
 
     public AbstractMannequin(EntityType<? extends AbstractMannequin> type, Level level) {
         super(type, level);
-        this.maxUpStep = 0.0F;
+        this.setMaxUpStep(0.0F);
     }
 
     @Override
@@ -219,7 +221,7 @@ public abstract class AbstractMannequin extends LivingEntity {
 
     @Override
     protected void pushEntities() {
-        List<Entity> list = this.level.getEntities(this, this.getBoundingBox(), MINECART);
+        List<Entity> list = this.level().getEntities(this, this.getBoundingBox(), MINECART);
 
         for (Entity entity : list) {
             if (this.distanceToSqr(entity) <= 0.2D) {
@@ -234,7 +236,7 @@ public abstract class AbstractMannequin extends LivingEntity {
             return InteractionResult.FAIL;
         if (!player.getItemInHand(hand).isEmpty() && !player.isSecondaryUseActive())
             return InteractionResult.PASS;
-        if (this.level.isClientSide())
+        if (this.level().isClientSide())
             return InteractionResult.SUCCESS;
 
         if (this.canChangeExpression(player, hand)) {
@@ -242,13 +244,13 @@ public abstract class AbstractMannequin extends LivingEntity {
                 if (!this.isTrolled()) {
                     this.setExpression(null);
                     this.setTrolled(true);
-                    this.level.playSound(null, this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 1.0F, 1.0F);
+                    this.level().playSound(null, this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 1.0F, 1.0F);
                     return InteractionResult.CONSUME;
                 }
             } else {
                 this.setTrolled(false);
                 this.cycleExpression();
-                this.level.playSound(null, this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 1.0F, 1.0F);
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 1.0F, 1.0F);
                 return InteractionResult.CONSUME;
             }
         }
@@ -268,10 +270,15 @@ public abstract class AbstractMannequin extends LivingEntity {
     }
 
     @Override
-    public boolean hurt(DamageSource source, float amount) {
-        if (this.level.isClientSide() || !this.isAlive()) return false;
+    public float getHurtDir() {
+        return (float) -Mth.atan2(this.position().x() - this.getX(), this.position().z() - this.getZ());
+    }
 
-        if (DamageSource.OUT_OF_WORLD.equals(source)) {
+    @Override
+    public boolean hurt(DamageSource source, float amount) {
+        if (this.level().isClientSide() || !this.isAlive()) return false;
+
+        if (source.is(DamageTypes.FELL_OUT_OF_WORLD)) {
             this.remove(RemovalReason.KILLED);
             return false;
         }
@@ -287,11 +294,10 @@ public abstract class AbstractMannequin extends LivingEntity {
             Vec3 pos = source.getSourcePosition();
             if (pos == null)
                 return false;
-            this.hurtDir = (float) -Mth.atan2(pos.x() - this.getX(), pos.z() - this.getZ());
-            this.level.broadcastEntityEvent(this, (byte) 32);
-            MannequinsMessages.PLAY.sendToTracking(this, new ClientboundAttackMannequin(this.getId(), this.hurtDir));
+            this.level().broadcastEntityEvent(this, (byte) 32);
+            MannequinsMessages.PLAY.sendToTracking(this, new ClientboundAttackMannequin(this.getId(), this.getHurtDir()));
             if (amount > 0) {
-                ((ServerLevel) this.level).sendParticles(ParticleTypes.DAMAGE_INDICATOR, this.getX(), this.getEyeY(), this.getZ(), (int) ((double) amount * 0.5D), 0.1D, 0.0D, 0.1D, 0.2D);
+                ((ServerLevel) this.level()).sendParticles(ParticleTypes.DAMAGE_INDICATOR, this.getX(), this.getEyeY(), this.getZ(), (int) ((double) amount * 0.5D), 0.1D, 0.0D, 0.1D, 0.2D);
             }
             return false;
         }
@@ -303,12 +309,12 @@ public abstract class AbstractMannequin extends LivingEntity {
             return true;
         }
 
-        long time = this.level.getGameTime();
+        long time = this.level().getGameTime();
         if (time - this.lastHit > 5L) {
-            this.level.broadcastEntityEvent(this, (byte) 32);
+            this.level().broadcastEntityEvent(this, (byte) 32);
             this.lastHit = time;
         } else {
-            Block.popResource(this.level, this.blockPosition(), this.getItem());
+            Block.popResource(this.level(), this.blockPosition(), this.getItem());
             this.breakMannequin(source);
             this.showBreakingParticles();
             this.remove(RemovalReason.KILLED);
@@ -321,9 +327,9 @@ public abstract class AbstractMannequin extends LivingEntity {
     @Environment(EnvType.CLIENT)
     public void handleEntityEvent(byte event) {
         if (event == 32) {
-            if (this.level.isClientSide) {
-                this.level.playLocalSound(this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 0.3F, 1.0F, false);
-                this.lastHit = this.level.getGameTime();
+            if (this.level().isClientSide) {
+                this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), this.getHitSound(), this.getSoundSource(), 0.3F, 1.0F, false);
+                this.lastHit = this.level().getGameTime();
             }
         } else {
             super.handleEntityEvent(event);
@@ -385,7 +391,7 @@ public abstract class AbstractMannequin extends LivingEntity {
 
     @Override
     public boolean skipAttackInteraction(Entity entity) {
-        return entity instanceof Player && !this.level.mayInteract((Player) entity, this.blockPosition());
+        return entity instanceof Player && !this.level().mayInteract((Player) entity, this.blockPosition());
     }
 
     @Override
@@ -472,8 +478,8 @@ public abstract class AbstractMannequin extends LivingEntity {
     }
 
     private void showBreakingParticles() {
-        if (this.level instanceof ServerLevel) {
-            ((ServerLevel) this.level).sendParticles(this.getParticle(), this.getX(), this.getY(0.6666666666666666D), this.getZ(), 10, this.getBbWidth() / 4.0F, this.getBbHeight() / 4.0F, this.getBbWidth() / 4.0F, 0.05D);
+        if (this.level() instanceof ServerLevel) {
+            ((ServerLevel) this.level()).sendParticles(this.getParticle(), this.getX(), this.getY(0.6666666666666666D), this.getZ(), 10, this.getBbWidth() / 4.0F, this.getBbHeight() / 4.0F, this.getBbWidth() / 4.0F, 0.05D);
         }
     }
 
@@ -495,24 +501,24 @@ public abstract class AbstractMannequin extends LivingEntity {
         for (int i = 0; i < this.inventory.getContainerSize(); ++i) {
             ItemStack stack = this.inventory.getItem(i);
             if (!stack.isEmpty()) {
-                Block.popResource(this.level, this.blockPosition().above(), stack);
+                Block.popResource(this.level(), this.blockPosition().above(), stack);
                 this.inventory.setItem(i, ItemStack.EMPTY);
             }
         }
     }
 
     private void playBrokenSound() {
-        this.level.playSound(null, this.getX(), this.getY(), this.getZ(), this.getBrokenSound(), this.getSoundSource(), 1.0F, 1.0F);
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(), this.getBrokenSound(), this.getSoundSource(), 1.0F, 1.0F);
     }
 
     public boolean hurtBySource(DamageSource source) {
-        if (source.isExplosion()) {
+        if (source.is(DamageTypeTags.IS_EXPLOSION)) {
             this.breakMannequin(source);
             this.remove(RemovalReason.KILLED);
             return true;
         }
 
-        if (DamageSource.IN_FIRE.equals(source)) {
+        if (source.is(DamageTypes.IN_FIRE)) {
             if (this.isOnFire()) {
                 this.causeDamage(source, 0.15F);
             } else {
@@ -522,7 +528,7 @@ public abstract class AbstractMannequin extends LivingEntity {
             return true;
         }
 
-        if (DamageSource.ON_FIRE.equals(source) && this.getHealth() > 0.5F) {
+        if (source.is(DamageTypes.ON_FIRE) && this.getHealth() > 0.5F) {
             this.causeDamage(source, 4.0F);
             return true;
         }

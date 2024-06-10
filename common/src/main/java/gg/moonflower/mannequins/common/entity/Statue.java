@@ -29,11 +29,11 @@ public class Statue extends AbstractMannequin {
         if (!super.canBreak(source, entity))
             return false;
 
-        Player player = ((Player) Objects.requireNonNull(source.getDirectEntity())); // Player isn't null because it's checked in the super.
-        if (source.isCreativePlayer()) {
+        boolean creativePlayer = source.getEntity() instanceof Player && ((Player)source.getEntity()).getAbilities().instabuild;
+        if (creativePlayer) {
             return true;
         } else {
-            return player.getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem;
+            return ((Player)source.getEntity()).getItemInHand(InteractionHand.MAIN_HAND).getItem() instanceof PickaxeItem;
         }
     }
 

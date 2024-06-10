@@ -21,9 +21,15 @@ public class Mannequin extends AbstractMannequin {
     private float attackAnimationXFactor;
     private float attackAnimationZFactor;
     private int attackAnimation;
+    private float hurtDir;
 
     public Mannequin(EntityType<? extends AbstractMannequin> type, Level level) {
         super(type, level);
+    }
+
+    @Override
+    public float getHurtDir() {
+        return hurtDir;
     }
 
     @Override
@@ -43,7 +49,7 @@ public class Mannequin extends AbstractMannequin {
     @Override
     public void tick() {
         super.tick();
-        if (this.level.isClientSide()) {
+        if (this.level().isClientSide()) {
             if (this.attackAnimation <= 0)
                 return;
             this.attackAnimation--;

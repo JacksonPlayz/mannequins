@@ -2,6 +2,7 @@ package gg.moonflower.mannequins.client.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import gg.moonflower.mannequins.client.screen.component.ScrollBar;
 import gg.moonflower.mannequins.common.entity.AbstractMannequin;
 import gg.moonflower.mannequins.common.menu.MannequinInventoryMenu;
@@ -9,6 +10,7 @@ import gg.moonflower.mannequins.common.network.MannequinsMessages;
 import gg.moonflower.mannequins.common.network.play.ServerboundSetMannequinPose;
 import gg.moonflower.pollen.api.render.util.v1.ScissorHelper;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -36,7 +38,7 @@ public abstract class AbstractMannequinScreen extends AbstractContainerScreen<Ma
     public AbstractMannequinScreen(MannequinInventoryMenu menu, Inventory inventory, AbstractMannequin mannequin) {
         super(menu, inventory, mannequin.getDisplayName());
         this.mannequin = mannequin;
-        this.passEvents = false;
+        //this.passEvents = false;
         this.imageHeight = 185;
         this.inventoryLabelY += 20;
     }
@@ -92,26 +94,24 @@ public abstract class AbstractMannequinScreen extends AbstractContainerScreen<Ma
     }
 
     @Override
-    protected void renderBg(PoseStack poseStack, float partialTicks, int mouseX, int mouseY) {
+    protected void renderBg(GuiGraphics graphics, float partialTicks, int mouseX, int mouseY) {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, this.getTexture());
-        this.blit(poseStack, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
+        graphics.blit(this.getTexture(), this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight);
 
         for (MannequinPart part : MannequinPart.values())
             if (selectedPart != part)
-                this.blit(poseStack, this.leftPos + part.xOffset, this.topPos + part.yOffset, part.isHovered(mouseX - this.leftPos, mouseY - this.topPos) ? part.buttonU + part.buttonWidth : part.buttonU, part.buttonV, part.buttonWidth, part.buttonHeight);
+                graphics.blit(this.getTexture(), this.leftPos + part.xOffset, this.topPos + part.yOffset, part.isHovered(mouseX - this.leftPos, mouseY - this.topPos) ? part.buttonU + part.buttonWidth : part.buttonU, part.buttonV, part.buttonWidth, part.buttonHeight);
 
         ScissorHelper.push(this.leftPos + 26, this.topPos + 18, 49, 70);
-        InventoryScreen.renderEntityInInventory(this.leftPos + 51, this.topPos + 80, 28, 0, -30, this.mannequin);
+        InventoryScreen.renderEntityInInventoryFollowsMouse(graphics, this.leftPos + 51, this.topPos + 80, 28, 0, -30, this.mannequin);
         ScissorHelper.pop();
     }
 
     @Override
-    public void render(PoseStack arg, int mouseX, int mouseY, float partialTicks) {
-        partialTicks = Minecraft.getInstance().getFrameTime();
-        this.renderBackground(arg);
-        super.render(arg, mouseX, mouseY, partialTicks);
-        this.renderTooltip(arg, mouseX, mouseY);
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTicks) {
+        this.renderBackground(graphics);
+        super.render(graphics, mouseX, mouseY, partialTicks);
+        this.renderTooltip(graphics, mouseX, mouseY);
 
         Rotations rotations = selectedPart.getRotation(this.mannequin);
         float x = this.xScroll.getInterpolatedScrollPercentage(partialTicks) * 360.0F - 180.0F;

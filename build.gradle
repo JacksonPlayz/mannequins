@@ -6,7 +6,7 @@ buildscript {
 
 plugins {
     id "architectury-plugin" version "3.4-SNAPSHOT"
-    id "dev.architectury.loom" version "1.0-SNAPSHOT" apply false
+    id "dev.architectury.loom" version "1.5-SNAPSHOT" apply false
     id "io.github.juuxel.loom-quiltflower" version "1.7.1" apply false
 }
 
@@ -53,6 +53,11 @@ allprojects {
             // location of a maven mirror for JEI files, as a fallback
             name = "ModMaven"
             url = "https://modmaven.dev"
+        }
+        maven {
+            // location of a maven mirror for JEI files, as a fallback
+            name = "cph101Snapshots"
+            url = "https://maven.cph101.com/snapshots"
         }
         maven {
             url "https://jitpack.io"

@@ -10,7 +10,6 @@ import gg.moonflower.mannequins.client.render.model.StatueModel;
 import gg.moonflower.mannequins.common.network.MannequinsMessages;
 import gg.moonflower.mannequins.common.network.play.handler.MannequinsClientPlayPacketHandlerImpl;
 import gg.moonflower.mannequins.core.registry.MannequinsEntities;
-import gg.moonflower.pollen.api.event.registry.v1.RegisterAtlasSpriteEvent;
 import net.minecraft.client.model.geom.builders.CubeDeformation;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
@@ -18,7 +17,7 @@ import net.minecraft.world.inventory.InventoryMenu;
 public class MannequinsClient {
 
     public static void init() {
-        RegisterAtlasSpriteEvent.event(InventoryMenu.BLOCK_ATLAS).register((atlas, registry) -> registry.accept(new ResourceLocation(Mannequins.MOD_ID, "item/empty_mannequin_slot_mainhand")));
+        //RegisterAtlasSpriteEvent.event(InventoryMenu.BLOCK_ATLAS).register((atlas, registry) -> registry.accept(new ResourceLocation(Mannequins.MOD_ID, "item/empty_mannequin_slot_mainhand")));
         EntityModelLayerRegistry.register(MannequinsModelLayers.MANNEQUIN, MannequinModel::createLayerDefinition);
         EntityModelLayerRegistry.register(MannequinsModelLayers.MANNEQUIN_INNER_ARMOR, () -> MannequinModel.createLayerDefinition(new CubeDeformation(0.5F)));
         EntityModelLayerRegistry.register(MannequinsModelLayers.MANNEQUIN_OUTER_ARMOR, () -> MannequinModel.createLayerDefinition(new CubeDeformation(1.0F)));

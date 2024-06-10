@@ -32,7 +32,7 @@ public class Mannequins {
         EntityAttributeRegistry.register(MannequinsEntities.STATUE, () -> AbstractMannequin.createLivingAttributes().add(Attributes.KNOCKBACK_RESISTANCE, 1.0));
         InteractionEvent.RIGHT_CLICK_ITEM.register((player, hand) -> {
             ItemStack stack = player.getItemInHand(hand);
-            if (player.level.isClientSide())
+            if (player.level().isClientSide())
                 return CompoundEventResult.pass();
 
             if (player.fishing == null || !(stack.getItem() instanceof FishingRodItem))

@@ -48,7 +48,7 @@ public class MannequinItem<T extends AbstractMannequin> extends Item {
             ServerLevel serverLevel = (ServerLevel) level;
 
             float yRot = (float) Mth.floor((Mth.wrapDegrees(context.getRotation() - 180.0F) + 22.5F) / 45.0F) * 45.0F;
-            AbstractMannequin mannequin = this.mannequin.get().create(serverLevel, stack.getTag(), null, context.getPlayer(), pos, MobSpawnType.SPAWN_EGG, true, true);
+            AbstractMannequin mannequin = this.mannequin.get().create(serverLevel, stack.getTag(), null, pos, MobSpawnType.SPAWN_EGG, true, true);
             if (mannequin == null) {
                 return InteractionResult.FAIL;
             }
