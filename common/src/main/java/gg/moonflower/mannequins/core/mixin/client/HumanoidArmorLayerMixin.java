@@ -40,7 +40,7 @@ public abstract class HumanoidArmorLayerMixin<T extends LivingEntity, M extends 
             return;
 
         ItemStack stack = entity.getItemBySlot(slot);
-        if (stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getSlot() == slot) {
+        if (stack.getItem() instanceof ArmorItem && ((ArmorItem) stack.getItem()).getEquipmentSlot() == slot) {
             poseStack.popPose();
         }
     }

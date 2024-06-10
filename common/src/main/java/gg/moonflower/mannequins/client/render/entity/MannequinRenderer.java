@@ -1,7 +1,7 @@
 package gg.moonflower.mannequins.client.render.entity;
 
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.math.Vector3f;
+import com.mojang.math.Axis;
 import gg.moonflower.mannequins.client.render.model.BasicMannequinModel;
 import gg.moonflower.mannequins.client.render.model.MannequinModel;
 import gg.moonflower.mannequins.client.render.model.MannequinsModelLayers;
@@ -28,10 +28,10 @@ public class MannequinRenderer extends AbstractMannequinRenderer<Mannequin> {
 
     @Override
     protected void setupRotations(Mannequin entity, PoseStack poseStack, float f, float g, float partialTicks) {
-        poseStack.mulPose(Vector3f.YP.rotationDegrees(180.0F - g));
-        float i = (float) (entity.level.getGameTime() - entity.lastHit) + partialTicks;
+        poseStack.mulPose(Axis.YP.rotationDegrees(180.0F - g));
+        float i = (float) (entity.level().getGameTime() - entity.lastHit) + partialTicks;
         if (!entity.hasAnimation() && i < 5.0F) {
-            poseStack.mulPose(Vector3f.YP.rotationDegrees(Mth.sin(i / 1.5F * (float) Math.PI) * 3.0F));
+            poseStack.mulPose(Axis.YP.rotationDegrees(Mth.sin(i / 1.5F * (float) Math.PI) * 3.0F));
         }
     }
 

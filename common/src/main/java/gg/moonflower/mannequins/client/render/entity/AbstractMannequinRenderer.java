@@ -19,7 +19,7 @@ public abstract class AbstractMannequinRenderer<T extends AbstractMannequin> ext
 
     public AbstractMannequinRenderer(EntityRendererProvider.Context context, BasicMannequinModel<T> model, BasicMannequinModel<T> innerArmorModel, BasicMannequinModel<T> outerArmorModel) {
         super(context, model, 0.0F);
-        this.addLayer(new HumanoidArmorLayer<>(this, innerArmorModel, outerArmorModel));
+        this.addLayer(new HumanoidArmorLayer<>(this, innerArmorModel, outerArmorModel, context.getModelManager()));
         this.addLayer(new ElytraLayer<>(this, context.getModelSet()));
         this.addLayer(new CustomHeadLayer<>(this, context.getModelSet(), context.getItemInHandRenderer()));
         this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
